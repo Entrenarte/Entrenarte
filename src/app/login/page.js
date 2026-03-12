@@ -1,0 +1,179 @@
+'use client';
+
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+
+export default function LoginPage() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const handleAuth = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            if (isRegistering) {
+                // Registro
+                const { data, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                });
+
+                if (authError) throw authError;
+
+                if (data.user) {
+                    // Asignar rol de admin si es tu correo
+                    const role = email === 'renngiann@gmail.com' ? 'admin' : 'student';
+
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert([
+                            {
+                                id: data.user.id,
+                                first_name: firstName,
+                                last_name: lastName,
+                                email: email,
+                                role: role,
+                            },
+                        ]);
+
+                    if (profileError) throw profileError;
+
+                    alert('¡Registro exitoso! Por favor inicia sesión ahora.');
+                    setIsRegistering(false);
+                }
+            } else {
+                // Login
+                const { data, error: loginError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (loginError) throw loginError;
+
+                // Buscar el perfil para saber el rol y redirigir
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                if (profile.role === 'admin') {
+                    router.push('/dashboard/admin');
+                } else {
+                    router.push('/dashboard/student');
+                }
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+            <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-sm border border-gray-200">
+                <div>
+                    <h2 className="mt-6 text-center text-3xl font-bold text-[#0f4c81] tracking-tight">
+                        {isRegistering ? 'Crear cuenta' : 'Ingresar'}
+                    </h2>
+                    <p className="mt-2 text-center text-sm text-gray-500 font-medium tracking-wide uppercase">
+                        Campus Virtual • BBA UNLP
+                    </p>
+                </div>
+
+                <form className="mt-8 space-y-6" onSubmit={handleAuth}>
+                    {error && (
+                        <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="rounded-md shadow-sm space-y-3">
+                        {isRegistering && (
+                            <>
+                                <div>
+                                    <label className="sr-only">Nombre</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#0f4c81] focus:border-[#0f4c81] transition-all sm:text-sm"
+                                        placeholder="Nombre"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="sr-only">Apellido</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#0f4c81] focus:border-[#0f4c81] transition-all sm:text-sm"
+                                        placeholder="Apellido"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                    />
+                                </div>
+                            </>
+                        )}
+                        <div>
+                            <label className="sr-only">Email</label>
+                            <input
+                                type="email"
+                                required
+                                className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#0f4c81] focus:border-[#0f4c81] transition-all sm:text-sm"
+                                placeholder="Correo electrónico"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="sr-only">Contraseña</label>
+                            <input
+                                type="password"
+                                required
+                                className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#0f4c81] focus:border-[#0f4c81] transition-all sm:text-sm"
+                                placeholder="Contraseña"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0f4c81] hover:bg-[#0a355c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0f4c81] transition-all disabled:opacity-50 shadow-sm"
+                        >
+                            {loading ? 'Cargando...' : isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
+                        </button>
+                    </div>
+
+                    <div className="text-sm text-center">
+                        <button
+                            type="button"
+                            className="font-medium text-[#0f4c81] hover:text-[#0a355c] hover:underline transition-all"
+                            onClick={() => setIsRegistering(!isRegistering)}
+                        >
+                            {isRegistering
+                                ? '¿Ya tenés cuenta? Iniciá sesión'
+                                : '¿No tenés cuenta? Registrate acá'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}

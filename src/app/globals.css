@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aulas-blue: #0f4c81;
+  --color-aulas-blue-hover: #0a355c;
+  --color-aulas-bg: #f4f6f9;
+  --color-aulas-white: #ffffff;
+  --color-aulas-text: #333333;
+  --color-aulas-border: #e2e8f0;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-aulas-bg);
+    color: var(--color-aulas-text);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
