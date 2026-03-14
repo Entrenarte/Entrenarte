@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center">
-                            <h1 className="text-xl font-bold tracking-tight text-white hover:opacity-90 cursor-default">Campus Virtual <span className="font-light text-blue-200">BBA</span></h1>
+                            <img src="/logo.png" alt="Entrenarte Logo" className="h-10 w-auto" />
                         </div>
                         <div className="flex items-center space-x-4">
                             {profile && <NotificationBell userId={profile.id} />}

@@ -14,6 +14,12 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Entrenarte - Campus Virtual BBA",
   description: "Plataforma educativa del Bachillerato de Bellas Artes - UNLP",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }) {
