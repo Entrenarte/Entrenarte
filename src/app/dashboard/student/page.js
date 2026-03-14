@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import FileUploader from '@/components/FileUploader';
 import ContactForm from '@/components/ContactForm';
 import ChatBox from '@/components/ChatBox';
+import ClassViewer from '@/components/ClassViewer';
 
 const CONCEPTUAL_GRADES = {
     A: 'Realizó las actividades de forma continua y sostenida. Concretó y profundizó la construcción de conocimiento.',
@@ -109,6 +110,7 @@ export default function StudentDashboard() {
 
     const sections = [
         { key: 'entregas', label: '📄 Entregas', icon: null },
+        { key: 'clases', label: '📚 Clases', icon: null },
         { key: 'chat', label: '💬 Mensajes', icon: null },
         { key: 'contacto', label: '✉️ Contacto', icon: null },
     ];
@@ -240,6 +242,14 @@ export default function StudentDashboard() {
                                     </ul>
                                 )}
                             </div>
+                        </div>
+                    )}
+
+                    {/* ============ CLASES ============ */}
+                    {activeSection === 'clases' && (
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-bold text-[#0f4c81] mb-2 px-1">📚 Mis Clases</h3>
+                            <ClassViewer />
                         </div>
                     )}
 

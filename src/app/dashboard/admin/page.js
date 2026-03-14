@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import GradeForm from '@/components/GradeForm';
 import ChatBox from '@/components/ChatBox';
 import FileUploader from '@/components/FileUploader';
+import ClassManager from '@/components/ClassManager';
 export const dynamic = 'force-dynamic';
 
 const CONCEPTUAL_COLORS = {
@@ -178,6 +179,7 @@ export default function AdminDashboard() {
 
     const tabs = [
         { key: 'entregas', label: 'Entregas' },
+        { key: 'clases', label: 'Clases' },
         { key: 'asistencias', label: 'Asistencias' },
         { key: 'mensajes', label: 'Mensajes' },
         { key: 'solicitudes', label: `Solicitudes${pendingCount > 0 ? ` (${pendingCount})` : ''}` },
@@ -319,6 +321,11 @@ export default function AdminDashboard() {
                             </table>
                         </div>
                     </div>
+                )}
+
+                {/* ===================== CLASES ===================== */}
+                {activeTab === 'clases' && (
+                    <ClassManager />
                 )}
 
                 {/* ===================== ASISTENCIAS ===================== */}
