@@ -94,7 +94,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-sm border border-gray-200">
                 <div className="flex flex-col items-center">
-                    <img src="/logo.png" alt="Entrenarte Logo" className="h-20 w-auto mb-4" />
+                    <img src="/logo-dark.png" alt="Entrenarte Logo" className="h-20 w-auto mb-4" style={{ mixBlendMode: 'multiply' }} />
                     <h2 className="text-center text-3xl font-bold text-[#0f4c81] tracking-tight">
                         {isRegistering ? 'Crear cuenta' : 'Ingresar'}
                     </h2>

@@ -15,9 +15,9 @@ export const metadata = {
   title: "Entrenarte - Campus Virtual BBA",
   description: "Plataforma educativa del Bachillerato de Bellas Artes - UNLP",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logo-dark.png",
+    shortcut: "/logo-dark.png",
+    apple: "/logo-dark.png",
   },
   manifest: "/manifest.json",
 };
