@@ -25,6 +25,7 @@ export default function AdminDashboard() {
     const [gradingSubmission, setGradingSubmission] = useState(null);
     const [selectedChatStudent, setSelectedChatStudent] = useState(null);
     const [adminProfile, setAdminProfile] = useState(null);
+    const [pendingUsers, setPendingUsers] = useState([]);
 
     function generateThursdays() {
         let dates = [];
@@ -58,7 +59,15 @@ export default function AdminDashboard() {
                 .from('profiles')
                 .select('*', { count: 'exact' })
                 .eq('role', 'student')
+                .eq('approved', true)
                 .order('last_name', { ascending: true });
+
+            // Fetch pending (unapproved) users
+            const { data: pending } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('approved', false)
+                .order('created_at', { ascending: false });
 
             const { data: subs, count: subCount } = await supabase
                 .from('submissions')
@@ -85,6 +94,7 @@ export default function AdminDashboard() {
             if (subs) setRecentSubmissions(subs);
             if (atts) setAttendances(atts);
             if (grs) setGrades(grs);
+            if (pending) setPendingUsers(pending);
 
             setLoading(false);
         };
@@ -133,12 +143,43 @@ export default function AdminDashboard() {
         });
     };
 
+    const handleApproveUser = async (userId) => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ approved: true })
+            .eq('id', userId);
+
+        if (!error) {
+            const approved = pendingUsers.find(u => u.id === userId);
+            setPendingUsers(prev => prev.filter(u => u.id !== userId));
+            if (approved && approved.role === 'student') {
+                setStudents(prev => [...prev, approved].sort((a, b) => a.last_name.localeCompare(b.last_name)));
+                setStats(prev => ({ ...prev, students: prev.students + 1 }));
+            }
+        }
+    };
+
+    const handleRejectUser = async (userId) => {
+        // Delete the profile and the auth user will remain but can't access
+        const { error } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', userId);
+
+        if (!error) {
+            setPendingUsers(prev => prev.filter(u => u.id !== userId));
+        }
+    };
+
     if (loading) return <div className="p-8 text-center text-gray-500">Cargando panel de administración...</div>;
+
+    const pendingCount = pendingUsers.length;
 
     const tabs = [
         { key: 'entregas', label: 'Entregas' },
         { key: 'asistencias', label: 'Asistencias' },
         { key: 'mensajes', label: 'Mensajes' },
+        { key: 'solicitudes', label: `Solicitudes${pendingCount > 0 ? ` (${pendingCount})` : ''}` },
     ];
 
     return (
@@ -401,6 +442,53 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* ===================== SOLICITUDES ===================== */}
+                {activeTab === 'solicitudes' && (
+                    <div className="p-6">
+                        {pendingUsers.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="text-4xl mb-3">✅</div>
+                                <p className="text-gray-500 text-sm">No hay solicitudes pendientes de aprobación.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded border border-yellow-100 mb-4">
+                                    ⚠️ Hay <strong>{pendingUsers.length}</strong> usuario(s) esperando aprobación para acceder a la plataforma.
+                                </p>
+                                {pendingUsers.map(user => (
+                                    <div key={user.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-sm">
+                                                {user.first_name?.[0]}{user.last_name?.[0]}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-900 text-sm">
+                                                    {user.last_name}, {user.first_name}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleApproveUser(user.id)}
+                                                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors"
+                                            >
+                                                ✓ Aprobar
+                                            </button>
+                                            <button
+                                                onClick={() => handleRejectUser(user.id)}
+                                                className="px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded hover:bg-red-200 transition-colors border border-red-200"
+                                            >
+                                                ✕ Rechazar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

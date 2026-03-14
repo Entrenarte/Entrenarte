@@ -43,12 +43,13 @@ export default function LoginPage() {
                                 last_name: lastName,
                                 email: email,
                                 role: role,
+                                approved: false,
                             },
                         ]);
 
                     if (profileError) throw profileError;
 
-                    alert('¡Registro exitoso! Por favor inicia sesión ahora.');
+                    alert('¡Registro enviado! El profesor debe aprobar tu cuenta antes de que puedas ingresar.');
                     setIsRegistering(false);
                 }
             } else {
@@ -60,14 +61,21 @@ export default function LoginPage() {
 
                 if (loginError) throw loginError;
 
-                // Buscar el perfil para saber el rol y redirigir
+                // Buscar el perfil para saber el rol y si está aprobado
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
-                    .select('role')
+                    .select('role, approved')
                     .eq('id', data.user.id)
                     .single();
 
                 if (profileError) throw profileError;
+
+                // Verificar aprobación (admins siempre pasan)
+                if (profile.role !== 'admin' && !profile.approved) {
+                    await supabase.auth.signOut();
+                    setError('Tu cuenta está pendiente de aprobación por el profesor. Intentá de nuevo más tarde.');
+                    return;
+                }
 
                 if (profile.role === 'admin') {
                     router.push('/dashboard/admin');
