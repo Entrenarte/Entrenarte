@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import GradeForm from '@/components/GradeForm';
 import ChatBox from '@/components/ChatBox';
+import FileUploader from '@/components/FileUploader';
 export const dynamic = 'force-dynamic';
 
 const CONCEPTUAL_COLORS = {
@@ -72,7 +73,7 @@ export default function AdminDashboard() {
             const { data: subs, count: subCount } = await supabase
                 .from('submissions')
                 .select(`
-                    id, description, file_url, created_at, student_id,
+                    id, description, file_url, link_url, created_at, student_id,
                     profiles (first_name, last_name, email)
                 `, { count: 'exact' })
                 .order('created_at', { ascending: false });
@@ -225,7 +226,15 @@ export default function AdminDashboard() {
             <div className="bg-white rounded shadow-sm border border-gray-200">
                 {/* ===================== ENTREGAS ===================== */}
                 {activeTab === 'entregas' && (
-                    <div className="p-6">
+                    <div className="p-6 space-y-6">
+                        {/* Admin upload section */}
+                        {adminProfile && (
+                            <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
+                                <h3 className="text-sm font-bold text-[#0f4c81] mb-3">📤 Subir material para la clase</h3>
+                                <FileUploader userId={adminProfile.id} onUploadSuccess={() => window.location.reload()} />
+                            </div>
+                        )}
+
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-[#f8f9fa] border-y border-gray-200">
@@ -272,14 +281,26 @@ export default function AdminDashboard() {
                                                         )}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
-                                                        <a
-                                                            href={supabase.storage.from('trabajos').getPublicUrl(sub.file_url).data.publicUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="inline-block bg-[#0f4c81] text-white px-3 py-1.5 rounded hover:bg-[#0a355c] transition-colors"
-                                                        >
-                                                            Descargar
-                                                        </a>
+                                                        {sub.file_url && (
+                                                            <a
+                                                                href={supabase.storage.from('trabajos').getPublicUrl(sub.file_url).data.publicUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-block bg-[#0f4c81] text-white px-3 py-1.5 rounded hover:bg-[#0a355c] transition-colors"
+                                                            >
+                                                                📄 Archivo
+                                                            </a>
+                                                        )}
+                                                        {sub.link_url && (
+                                                            <a
+                                                                href={sub.link_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-block bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 transition-colors"
+                                                            >
+                                                                🔗 Link
+                                                            </a>
+                                                        )}
                                                         <button
                                                             onClick={() => setGradingSubmission(sub)}
                                                             className={`inline-block px-3 py-1.5 rounded transition-colors ${grade

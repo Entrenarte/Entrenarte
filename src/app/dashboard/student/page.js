@@ -161,7 +161,7 @@ export default function StudentDashboard() {
                             {/* Upload */}
                             <div className="bg-white p-6 rounded shadow-sm border border-gray-200">
                                 <h3 className="text-lg font-bold text-[#0f4c81] mb-4 border-b pb-2">Entregar Trabajo Práctico</h3>
-                                <FileUploader studentId={studentId} onUploadSuccess={fetchUserData} />
+                                <FileUploader userId={studentId} onUploadSuccess={fetchUserData} />
                             </div>
 
                             {/* Submissions List with Grades */}
@@ -189,14 +189,28 @@ export default function StudentDashboard() {
                                                                 })}
                                                             </p>
                                                         </div>
-                                                        <a
-                                                            href={supabase.storage.from('trabajos').getPublicUrl(sub.file_url).data.publicUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-sm bg-[#0f4c81] text-white px-3 py-1.5 rounded hover:bg-[#0a355c] transition-colors whitespace-nowrap shrink-0"
-                                                        >
-                                                            Ver Archivo
-                                                        </a>
+                                                        <div className="flex gap-2 shrink-0">
+                                                            {sub.file_url && (
+                                                                <a
+                                                                    href={supabase.storage.from('trabajos').getPublicUrl(sub.file_url).data.publicUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm bg-[#0f4c81] text-white px-3 py-1.5 rounded hover:bg-[#0a355c] transition-colors whitespace-nowrap"
+                                                                >
+                                                                    📄 Archivo
+                                                                </a>
+                                                            )}
+                                                            {sub.link_url && (
+                                                                <a
+                                                                    href={sub.link_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 transition-colors whitespace-nowrap"
+                                                                >
+                                                                    🔗 Link
+                                                                </a>
+                                                            )}
+                                                        </div>
                                                     </div>
 
                                                     {/* Grade Display */}
